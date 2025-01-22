@@ -5,7 +5,7 @@ COPY . .
 RUN go mod tidy
 RUN go build -o lucky
 
-FROM debian:bookworm-slim
+FROM debian:bookworm
 WORKDIR /app
 COPY --from=builder /app/lucky .
 COPY --from=builder /app/plugin ./plugin
