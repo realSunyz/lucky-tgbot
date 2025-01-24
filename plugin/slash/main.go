@@ -27,14 +27,14 @@ func isValid(inputText string) bool {
 	return true
 }
 
-func genLink(c tele.Context) (string, string) {
-	genName := func(firstName, lastName string) string {
-		if lastName != "" {
-			return fmt.Sprintf("%s %s", firstName, lastName)
-		}
-		return firstName
+func genName(firstName, lastName string) string {
+	if lastName != "" {
+		return fmt.Sprintf("%s %s", firstName, lastName)
 	}
+	return firstName
+}
 
+func genLink(c tele.Context) (string, string) {
 	senderURI := fmt.Sprintf("tg://user?id=%d", c.Message().Sender.ID)
 	senderName := genName(c.Message().Sender.FirstName, c.Message().Sender.LastName)
 
@@ -54,6 +54,7 @@ func genLink(c tele.Context) (string, string) {
 		replyToURI = fmt.Sprintf("tg://user?id=%d", c.Message().ReplyTo.Sender.ID)
 		replyToName = genName(c.Message().ReplyTo.Sender.FirstName, c.Message().ReplyTo.Sender.LastName)
 
+		// Message replied to was sent on behalf of a Channel or Group
 		if c.Message().ReplyTo.SenderChat != nil {
 			chatID := -1 * (c.Message().ReplyTo.SenderChat.ID % 10000000000)
 			replyToURI = fmt.Sprintf("https://t.me/c/%d", chatID)
@@ -61,22 +62,30 @@ func genLink(c tele.Context) (string, string) {
 		}
 	}
 
+	// Feature: Specify the user who is the target of the action using an At Sign (@)
 	if len(c.Message().Entities) != 0 {
 		if c.Message().Entities[0].Type == "text_mention" {
+			// User does NOT have a public username
 			replyToURI = fmt.Sprintf("tg://user?id=%d", c.Message().Entities[0].User.ID)
 			replyToName = genName(c.Message().Entities[0].User.FirstName, c.Message().Entities[0].User.LastName)
 		} else if c.Message().Entities[0].Type == "mention" {
+			// User have a public username
 			t := strings.Index(c.Text(), " @")
 			if t != -1 {
 				pubUserName := c.Text()[t:]
 				replyToName = strings.TrimSpace(pubUserName)
 			}
+			// User ID can NOT be obtained if only public usernames are provided
 			replyToURI = ""
 		}
 	}
 
 	senderLink := fmt.Sprintf("[%s](%s)", senderName, senderURI)
 	replyToLink := fmt.Sprintf("[%s](%s)", replyToName, replyToURI)
+
+	if replyToURI == "" {
+		replyToLink = fmt.Sprintf("%s", replyToName)
+	}
 
 	return senderLink, replyToLink
 }
