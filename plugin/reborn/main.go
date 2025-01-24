@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"time"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -60,10 +59,7 @@ func randGender(r *rand.Rand) string {
 	return genders[r.Intn(len(genders))]
 }
 
-func Execute(c tele.Context, data *RebornData) error {
-	source := rand.NewSource(time.Now().UnixNano())
-	r := rand.New(source)
-
+func Execute(c tele.Context, r *rand.Rand, data *RebornData) error {
 	country, err := data.randCountry(r)
 	if err != nil {
 		return nil
