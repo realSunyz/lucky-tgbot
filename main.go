@@ -1,15 +1,16 @@
 package main
 
 import (
-	"github.com/realSunyz/lucky-tgbot/plugin/reborn"
-	"github.com/realSunyz/lucky-tgbot/plugin/slash"
-	"github.com/realSunyz/lucky-tgbot/plugin/torf"
 	"log"
 	"math/rand"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/realSunyz/lucky-tgbot/plugin/info"
+	"github.com/realSunyz/lucky-tgbot/plugin/reborn"
+	"github.com/realSunyz/lucky-tgbot/plugin/slash"
+	"github.com/realSunyz/lucky-tgbot/plugin/torf"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -33,11 +34,11 @@ func main() {
 	source := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(source)
 
+	b.Handle("/info", info.Execute)
+
 	b.Handle("/reborn", func(c tele.Context) error {
 		return reborn.Execute(c, r, rebornData)
 	})
-
-	// b.Handle("/info", info.Execute)
 
 	b.Handle(tele.OnText, func(c tele.Context) error {
 		inputText := c.Text()
